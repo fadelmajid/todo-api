@@ -52,7 +52,7 @@ let accountModel = (db) => {
       let sql =
         "INSERT INTO " +
         tables.account +
-        "(u_email, u_password, u_name, u_role, u_created_at) VALUES (?)";
+        "(u_email, u_password, u_full_name, u_role, u_created_at) VALUES (?)";
 
       // run query
       db.query(sql, [data], (err, res) => {

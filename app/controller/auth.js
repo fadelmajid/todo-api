@@ -191,6 +191,130 @@ let obj = () => {
     }
   };
 
+  fn.checkTokenAndRegister = async (req, res, next) => {
+    try {
+      let access_token = req.headers["access-token"] || "";
+
+      // validate access token
+      if (validator.isEmpty(access_token)) {
+        throw { message: "Your access token is invalid or already expired." };
+      }
+
+      let detailToken = await req
+        .model("auth")
+        .getValidAccessToken(access_token);
+      // validate access token
+      if (detailToken == null) {
+        throw { message: "Your access token is invalid or already expired." };
+      }
+
+      // if logged in select customer information
+      if (detailToken.customer_id > 0) {
+        // get customer detail
+        let detailCustomer = await req
+          .model("account")
+          .getUser(detailToken.customer_id);
+        // if customer not found, throw error
+        if (detailCustomer == null) {
+          // inactive token by device id
+          await req.model("auth").setTokenInactive(detailToken.atoken_device);
+          throw { message: "User not found, please re-login." };
+        }
+
+        // set customer & token into request object
+        req.objUser = detailCustomer;
+        req.objToken = detailToken;
+      } else {
+        // set customer & token into request object
+        req.objUser = null;
+        req.objToken = detailToken;
+      }
+      fn.register(req, res, next);
+    } catch (e) {
+      res.send(Object.assign({ status: 401 }, e));
+    }
+  };
+
+  fn.checkLogin2 = async (req, res, next) => {
+    try {
+      let access_token = req.headers["access-token"] || "";
+
+      // validate access token
+      if (validator.isEmpty(access_token)) {
+        throw { message: "Your access token is invalid or already expired." };
+      }
+
+      // get detail token by access token
+      let detailToken = await req
+        .model("auth")
+        .getValidAccessToken(access_token);
+
+      // validate access token
+      if (detailToken == null) {
+        throw { message: "Your access token is invalid or already expired." };
+      }
+
+      // validate customer login
+      if (detailToken.customer_id <= 0) {
+        throw { message: "You are not authorized to access this page." };
+      }
+
+      // get customer detail
+      let detailCustomer = await req
+        .model("account")
+        .getUser(detailToken.customer_id);
+      // if customer not found, throw error
+      if (detailCustomer == null) {
+        // inactive token by device id
+        await req.model("auth").setTokenInactive(detailToken.atoken_device);
+        throw { message: "User not found, please re-login." };
+      }
+
+      // set activity
+      await req.model("account").updateLogout(detailCustomer.u_id, now);
+
+      // set customer & token into request object
+      req.objUser = detailCustomer;
+      req.objToken = detailToken;
+    } catch (e) {
+      res.send(Object.assign({ status: 400 }, e));
+    }
+  };
+
+  fn.register = async (req, res, next) => {
+    try {
+      // Initialize Variable
+      let email = (req.body.email || "").trim().toLowerCase();
+      let password = (req.body.password || "").trim();
+      let role = parseInt((req.body.role || 0).trim());
+      let now = moment().format("YYYY-MM-DD HH:mm:ss");
+      let name = (req.body.name || "").trim();
+
+      // Required Email
+      if (validator.isEmpty(email))
+        throw { message: "Email Address is required." };
+
+      // Validate Email Format
+      if (!validator.isEmail(email)) throw { message: "Invalid Email Address." };
+
+      // Required Password
+      if (validator.isEmpty(password)) throw { message: "Password is required." };
+
+      // Validate Role
+      // 0 : User
+      // 1 : Admin
+      if (role < 0 || role > 1) throw { message: "Invalid Role." };
+
+      let data = [email, md5(password), name, role, now];
+
+      let result = await req.model('account').insertUser(data);
+
+      res.send(result);
+    } catch (e) {
+      res.send(Object.assign({ status: 400 ,error: e} ));
+    }
+  }
+
   return fn;
 };
 

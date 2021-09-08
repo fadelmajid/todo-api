@@ -25,6 +25,14 @@ module.exports = (app) => {
       middlewares: [authController.checkLogin],
       auth: "no",
     },
+    {
+      method: 'post',
+      route: '/register',
+      inits: [],
+      middlewares: [authController.checkTokenAndRegister],
+      auth: 'no'
+    },
+
   ];
   return aRoutes;
 };

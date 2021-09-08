@@ -21,7 +21,7 @@ let src = (fw, rootpath) => {
         try {
             req.db = await objDB.connect()
             req.model = (filename) => {
-                return require("../app/models/" + filename)(objDB, req.db)
+                return require("../app/models/" + filename)(req.db)
             }
             next()
         } catch(e) {

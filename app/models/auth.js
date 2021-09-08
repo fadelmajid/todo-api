@@ -1,4 +1,4 @@
-let authModel = (objDB, db) => {
+let authModel = (db) => {
   // get tables name
   const tables = require("../../config/tables.json");
   const moment = require("moment");

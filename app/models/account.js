@@ -1,4 +1,4 @@
-let accountModel = (objDB, db) => {
+let accountModel = (db) => {
   // get tables name
   const tables = require("../../config/tables.json");
   const moment = require("moment");
@@ -92,7 +92,7 @@ let accountModel = (objDB, db) => {
 
   fn.login = async (data) => {
     const { detailUser, objToken } = data;
-    let auth = require("../models/auth")(objDB, db);
+    let auth = require("../models/auth")(db);
 
     try {
       await auth.updateToken(detailUser.u_id, now, objToken.atoken_id);

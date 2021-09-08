@@ -49,7 +49,7 @@ let obj = () => {
 
       fn.login(req, res, next);
     } catch (e) {
-      res.send(Object.assign({ status: 400 }, e));
+      res.send(Object.assign({ status: 401 }, e));
     }
   };
 
@@ -120,7 +120,7 @@ let obj = () => {
       };
       res.send(result);
     } catch (e) {
-      res.send(Object.assign({ status: 401 }, e));
+      res.send(Object.assign({ status: 400 }, e));
     }
   };
 
@@ -168,7 +168,7 @@ let obj = () => {
         throw { message: "Sorry, we have problem when trying to log you in." };
       }
     } catch (e) {
-      res.send(Object.assign({ status: 400 }, e));
+      res.send(Object.assign({ status: 401 }, e));
     }
   };
 

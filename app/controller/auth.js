@@ -270,8 +270,6 @@ let obj = () => {
         throw { message: "User not found, please re-login." };
       }
 
-      // set activity
-      await req.model("account").updateLogout(detailCustomer.u_id, now);
 
       // set customer & token into request object
       req.objUser = detailCustomer;

@@ -36,7 +36,7 @@ let accountModel = (db) => {
   fn.getUserEmail = async (email) => {
     return new Promise((resolve, reject) => {
       // prepare query
-      let sql = "SELECT * FROM " + tables.account + " WHERE u_email = ?";
+      let sql = "SELECT * FROM " + tables.account + " WHERE u_email = ? AND u_status = 'active';";
 
       // run query
       db.query(sql, [email], (err, res) => {

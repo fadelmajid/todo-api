@@ -19,13 +19,13 @@ let projectModel = (db) => {
         
     }
 
-    fn.getProject = async (id) => {
+    fn.getProject = async (id, userid) => {
         return new Promise((resolve, reject) => {
             // prepare query
-            let sql = "SELECT * FROM " + tables.main_project + " WHERE mp_id = ? LIMIT = 1"
+            let sql = "SELECT * FROM " + tables.main_project + " WHERE mp_id = ? AND mp_u_fk = ? LIMIT = 1"
 
             // run query
-            db.query(sql, [id], function (err, res) {
+            db.query(sql, [id, userid], function (err, res) {
                 if (err) return reject(err);
                 return resolve(res[0]);
             })

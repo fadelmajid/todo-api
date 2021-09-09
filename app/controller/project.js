@@ -10,11 +10,40 @@ let obj = () =>{
 
     fn.getAllProject = async (req, res, next) => {
         try {
-            let userid = parseInt(req.params.userid)
+            let access_token = req.headers["access-token"] || "";
+
+            // validate access token
+            if (validator.isEmpty(access_token)) {
+              throw { message: "Your access token is invalid or already expired." };
+            }
+      
+            // get detail token by access token
+            let detailToken = await req
+              .model("auth")
+              .getValidAccessToken(access_token);
+      
+            // validate access token
+            if (detailToken == null) {
+              throw { message: "Your access token is invalid or already expired." };
+            }
+      
+            // validate customer login
+            if (detailToken.customer_id <= 0) {
+              throw { message: "You are not authorized to access this page." };
+            }
+      
+            // get customer detail
+            let detailCustomer = await req
+              .model("account")
+              .getUser(detailToken.customer_id);
+            // if customer not found, throw error
+            if (detailCustomer == null) {
+              // inactive token by device id
+              await req.model("auth").setTokenInactive(detailToken.atoken_device);
+              throw { message: "User not found, please re-login." };
+            }
             
-            //check userid
-            if(userid <= 0) throw getMessage("udf001")
-            let result = await req.model('project').getAllProject(userid);
+            let result = await req.model('project').getAllProject(customer_id);
 
             res.success(result)
             
@@ -25,11 +54,42 @@ let obj = () =>{
 
     fn.getProject = async (req, res, next) => {
         try {
+            let access_token = req.headers["access-token"] || "";
+
+            // validate access token
+            if (validator.isEmpty(access_token)) {
+              throw { message: "Your access token is invalid or already expired." };
+            }
+      
+            // get detail token by access token
+            let detailToken = await req
+              .model("auth")
+              .getValidAccessToken(access_token);
+      
+            // validate access token
+            if (detailToken == null) {
+              throw { message: "Your access token is invalid or already expired." };
+            }
+      
+            // validate customer login
+            if (detailToken.customer_id <= 0) {
+              throw { message: "You are not authorized to access this page." };
+            }
+      
+            // get customer detail
+            let detailCustomer = await req
+              .model("account")
+              .getUser(detailToken.customer_id);
+            // if customer not found, throw error
+            if (detailCustomer == null) {
+              // inactive token by device id
+              await req.model("auth").setTokenInactive(detailToken.atoken_device);
+              throw { message: "User not found, please re-login." };
+            }
+
             let projectid = parseInt(req.params.projectid)
             
-            //check userid
-            if(projectid <= 0) throw getMessage("udf002")
-            let result = await req.model('project').getProject(projectid);
+            let result = await req.model('project').getProject(projectid, customer_id);
 
             res.success(result)
             

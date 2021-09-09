@@ -32,19 +32,23 @@ let projectModel = (db) => {
         })
     }
 
-    fn.createProject = async (data) =>{
+    fn.insertProject = (data) => {
         return new Promise((resolve, reject) => {
             // prepare query
-            let sql = "INSERT INTO " + tables.account + "(mp_u_fk, mp_status, mp_title, mp_desc, mp_deadline, mp_photo, mp_created_at, mp_updated_at) VALUES (?)";
-
+            let sql = "INSERT INTO "+tables.main_project+"(mp_u_fk, mp_status, mp_title, mp_desc, mp_deadline, mp_created_at) VALUES (?)";
+            
             // run query
-            db.query(sql, [data], function (err, res) {
+            db.query(sql, [data], (err, res) => {
                 if (err) return reject(err);
                 return resolve({ status: 200, message: "Success" });
-            })
-        })
-    }
+          });
+        });
+      };
 
+    fn.updateProject = async (id, data) => {
+        let where = {'cond' : 'mp_id = $1', 'bind': [id]}
+        return await objDB.update(db, tables.main_project, where, data)
+    }
     return fn
 }
 

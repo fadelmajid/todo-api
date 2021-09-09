@@ -32,10 +32,10 @@ let taskModel = (db) => {
         })
     }
 
-    fn.createTask = async (data) =>{
+    fn.insertTask = async (data) =>{
         return new Promise((resolve, reject) => {
             // prepare query
-            let sql = "INSERT INTO "+tables.account+"(t_mp_fk, t_status, t_deadline, t_title, t_desc, t_created_at, t_updated_at) VALUES (?)";
+            let sql = "INSERT INTO "+tables.task+"(t_mp_fk, t_status, t_deadline, t_title, t_desc, t_created_at) VALUES (?)";
 
             // run query
             db.query(sql, [data], function (err, res) {
@@ -45,7 +45,12 @@ let taskModel = (db) => {
         })
     }
 
+    fn.updateTask = async (id, data) => {
+        let where = {'cond' : 't_id = $1', 'bind': [id]}
+        return await objDB.update(db, tables.task, where, data)
+    }
+
     return fn
 }
 
-module.exports = accountModel
+module.exports = taskModel

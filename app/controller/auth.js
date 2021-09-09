@@ -270,8 +270,6 @@ let obj = () => {
         throw { message: "User not found, please re-login." };
       }
 
-      // set activity
-      await req.model("account").updateLogout(detailCustomer.u_id, now);
 
       // set customer & token into request object
       req.objUser = detailCustomer;
@@ -305,7 +303,7 @@ let obj = () => {
       // 1 : Admin
       if (role < 0 || role > 1) throw { message: "Invalid Role." };
 
-      let data = [email, md5(password), name, role, now];
+      let data = [email, md5(password), name, role, now, "active"];
 
       let result = await req.model('account').insertUser(data);
 

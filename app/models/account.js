@@ -36,7 +36,7 @@ let accountModel = (db) => {
   fn.getUserEmail = async (email) => {
     return new Promise((resolve, reject) => {
       // prepare query
-      let sql = "SELECT * FROM " + tables.account + " WHERE u_email = ?";
+      let sql = "SELECT * FROM " + tables.account + " WHERE u_email = ? AND u_status = 'active';";
 
       // run query
       db.query(sql, [email], (err, res) => {
@@ -52,7 +52,7 @@ let accountModel = (db) => {
       let sql =
         "INSERT INTO " +
         tables.account +
-        "(u_email, u_password, u_full_name, u_role, u_created_at) VALUES (?)";
+        "(u_email, u_password, u_full_name, u_role, u_created_at, u_status) VALUES (?)";
 
       // run query
       db.query(sql, [data], (err, res) => {
@@ -101,6 +101,20 @@ let accountModel = (db) => {
     } catch (e) {
       return false;
     }
+  };
+
+  fn.updateUser = async (id, data) => {
+    return new Promise((resolve, reject) => {
+      // prepare query
+      let sql =
+        "UPDATE " + tables.account + " SET u_status = 'inactive' WHERE u_id = ?";
+
+      // run query
+      db.query(sql, [id], function (err, res) {
+        if (err) return reject(false);
+        return resolve(true);
+      });
+    });
   };
 
   return fn;

@@ -3,6 +3,7 @@ let accountModel = (db) => {
   const tables = require("../../config/tables.json");
   const moment = require("moment");
   const now = moment().format("YYYY-MM-DD HH:mm:ss");
+  const md5 = require("md5");
 
   const fn = {};
 
@@ -36,7 +37,7 @@ let accountModel = (db) => {
   fn.getUserEmail = async (email) => {
     return new Promise((resolve, reject) => {
       // prepare query
-      let sql = "SELECT * FROM " + tables.account + " WHERE u_email = ? AND u_status = 'active';";
+      let sql = "SELECT * FROM " + tables.account + " WHERE u_email = ?";
 
       // run query
       db.query(sql, [email], (err, res) => {
@@ -103,16 +104,56 @@ let accountModel = (db) => {
     }
   };
 
-  fn.updateUser = async (id, data) => {
+  fn.generatePassword = () => {
+    const mili = moment().millisecond();
+    const rstr = "_" + Math.random().toString(36).substr(2, 9);
+    return md5(mili + rstr).substr(0, 8);
+  };
+
+  fn.resetPassword = (data) => {
     return new Promise((resolve, reject) => {
       // prepare query
       let sql =
-        "UPDATE " + tables.account + " SET u_status = 'inactive' WHERE u_id = ?";
+        "UPDATE " + tables.account + " SET u_password = ? WHERE u_id = ?";
+
+      // run query
+      db.query(sql, [data.newPass, data.detailUser], (err, res) => {
+        if (err) return reject(false);
+        return resolve(true);
+      });
+    });
+  };
+
+  fn.updatePassword = async (data) => {
+    return new Promise((resolve, reject) => {
+      // prepare query
+      let sql =
+        "UPDATE " + tables.account + " SET u_password = ? WHERE u_id = ?";
+
+      // run query
+      db.query(sql, [data.newPass, data.id], function (err, res) {
+        if (err) return reject(false);
+        return resolve(true);
+      });
+    });
+  };
+
+  fn.updateUserStatus = async (id) => {
+    return new Promise((resolve, reject) => {
+      // prepare query
+      let sql =
+        "UPDATE " +
+        tables.account +
+        " SET u_status = 'inactive' WHERE u_id = ?";
 
       // run query
       db.query(sql, [id], function (err, res) {
-        if (err) return reject(false);
-        return resolve(true);
+        if (err)
+          return reject({
+            status: 400,
+            message: "Oops sorry, something went wrong!",
+          });
+        return resolve({ status: 200, message: "Delete Account Successful" });
       });
     });
   };

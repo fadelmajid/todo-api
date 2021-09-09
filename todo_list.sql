@@ -28,9 +28,9 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `tdl_main_project` (
-  `mp_id` int(11) NOT NULL,
-  `mp_u_fk` int(11) NOT NULL,
-  `mp_status` varchar(5) NOT NULL,
+  `mp_id` int NOT NULL AUTO_INCREMENT,
+  `mp_u_fk` int NOT NULL,
+  `mp_status` tinyint NOT NULL,
   `mp_title` varchar(100) NOT NULL,
   `mp_desc` text DEFAULT NULL,
   `mp_deadline` datetime NOT NULL,
@@ -46,14 +46,15 @@ CREATE TABLE `tdl_main_project` (
 --
 
 CREATE TABLE `tdl_tasks` (
-  `t_id` int(11) NOT NULL,
-  `t_mp_fk` int(11) NOT NULL,
+  `t_id` int NOT NULL AUTO_INCREMENT,
+  `t_mp_fk` int NOT NULL,
   `t_status` varchar(5) NOT NULL,
   `t_deadline` datetime NOT NULL,
   `t_title` varchar(100) NOT NULL,
   `t_desc` text DEFAULT NULL,
   `t_created_at` datetime NOT NULL,
-  `t_updated_at` datetime DEFAULT NULL
+  `t_updated_at` datetime DEFAULT NULL,
+  `t_u_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -63,19 +64,30 @@ CREATE TABLE `tdl_tasks` (
 --
 
 CREATE TABLE `tdl_user_accounts` (
-  `u_id` int(11) NOT NULL,
+  `u_id` int NOT NULL AUTO_INCREMENT,
   `u_role` varchar(5) NOT NULL,
   `u_email` varchar(100) NOT NULL,
   `u_password` varchar(100) NOT NULL,
   `u_full_name` varchar(100) NOT NULL,
   `u_last_login` datetime DEFAULT NULL,
   `u_last_logout` datetime DEFAULT NULL,
-  `u_created_at` datetime NOT NULL
+  `u_created_at` datetime NOT NULL,
+  `u_status` varchar(45) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Indexes for dumped tables
---
+CREATE TABLE IF NOT EXISTS auth_token (
+  atoken_id VARCHAR(100) NOT NULL,
+  customer_id INT NOT NULL,
+  atoken_device VARCHAR(200) NOT NULL,
+  atoken_platform VARCHAR(200) NOT NULL,
+  atoken_access VARCHAR(200) NOT NULL,
+  atoken_status VARCHAR(10) NOT NULL,
+  atoken_refresh VARCHAR(200) NOT NULL,
+  expired_date TIMESTAMP NOT NULL,
+  created_date TIMESTAMP NOT NULL,
+  updated_date TIMESTAMP NOT NULL,
+  PRIMARY KEY (atoken_id)
+);
 
 --
 -- Indexes for table `tdl_main_project`

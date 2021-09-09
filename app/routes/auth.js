@@ -15,24 +15,37 @@ module.exports = (app) => {
       method: "post",
       route: "/login",
       inits: [],
-      middlewares: [authController.checkToken],
+      middlewares: [authController.checkToken, authController.login],
       auth: "no",
     },
     {
       method: "post",
       route: "/logout",
       inits: [],
-      middlewares: [authController.checkLogin],
+      middlewares: [authController.checkLogin, authController.logout],
       auth: "no",
     },
     {
-      method: 'post',
-      route: '/register',
+      method: "post",
+      route: "/register",
       inits: [],
-      middlewares: [authController.checkTokenAndRegister],
-      auth: 'no'
+      middlewares: [authController.checkToken, authController.register],
+      auth: "no",
     },
-
+    {
+      method: "post",
+      route: "/reset-password",
+      inits: [],
+      middlewares: [authController.checkToken, authController.resetPassword],
+      auth: "no",
+    },
+    {
+      method: "post",
+      route: "/update-password",
+      inits: [],
+      middlewares: [authController.checkLogin, authController.updatePassword],
+      auth: "no",
+    },
   ];
   return aRoutes;
 };

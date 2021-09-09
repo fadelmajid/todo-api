@@ -1,56 +1,74 @@
 let taskModel = (db) => {
-    // get tables name
-    const tables = require('../../config/tables.json')
-    
-    const fn = {}
+  const tables = require("../../config/tables.json");
 
-    // get all account
-    fn.getAllTasks = async (projectid) => {
-        return new Promise((resolve, reject) => {
-            // prepare query
-            let sql = "SELECT * FROM " + tables.task + " WHERE t_mp_fk = ?"
+  const fn = {};
 
-            // run query
-            db.query(sql, [projectid], function (err, res) {
-                if (err) return reject(err);
-                return resolve(res);
-            })
-        })
-        
-    }
+  // get all account
+  fn.getAllTask = async (projectid, userid) => {
+    return new Promise((resolve, reject) => {
+      // prepare query
+      let sql =
+        "SELECT * FROM " + tables.task + " WHERE t_mp_fk = ? AND t_u_id = ?";
 
-    fn.getTask = async (id) => {
-        return new Promise((resolve, reject) => {
-            // prepare query
-            let sql = "SELECT * FROM " + tables.task + " WHERE t_id = ? LIMIT = 1"
+      // run query
+      db.query(sql, [projectid, userid], function (err, res) {
+        if (err) return reject(err);
+        return resolve(res);
+      });
+    });
+  };
 
-            // run query
-            db.query(sql, [id], function (err, res) {
-                if (err) return reject(err);
-                return resolve(res[0]);
-            })
-        })
-    }
+  fn.getTask = async (id, userId) => {
+    return new Promise((resolve, reject) => {
+      // prepare query
+      let sql =
+        "SELECT * FROM " + tables.task + " WHERE t_id = ? AND t_u_id = ?";
 
-    fn.insertTask = async (data) =>{
-        return new Promise((resolve, reject) => {
-            // prepare query
-            let sql = "INSERT INTO "+tables.task+"(t_mp_fk, t_status, t_deadline, t_title, t_desc, t_created_at) VALUES (?)";
+      // run query
+      db.query(sql, [id, userId], function (err, res) {
+        if (err) return reject(err);
+        return resolve(res[0]);
+      });
+    });
+  };
 
-            // run query
-            db.query(sql, [data], function (err, res) {
-                if (err) return reject(err);
-                return resolve({ status: 200, message: "Success" });
-            })
-        })
-    }
+  fn.createTask = async (data) => {
+    return new Promise((resolve, reject) => {
+      // prepare query
+      let sql =
+        "INSERT INTO " +
+        tables.task +
+        "(t_mp_fk, t_title, t_desc, t_deadline, t_status, t_created_at, t_u_id) VALUES (?)";
 
-    fn.updateTask = async (id, data) => {
-        let where = {'cond' : 't_id = $1', 'bind': [id]}
-        return await objDB.update(db, tables.task, where, data)
-    }
+      // run query
+      db.query(sql, [data], function (err, res) {
+        if (err) return reject(err);
+        return resolve({ status: 200, message: "Success" });
+      });
+    });
+  };
 
-    return fn
-}
+  fn.updateTask = async (data) => {
+    return new Promise((resolve, reject) => {
+      // prepare query
+      let sql =
+        "UPDATE " +
+        tables.task +
+        " SET t_title = ?, t_desc = ?, t_deadline = ?, t_status = ?, t_updated_at = ? WHERE t_id = ? AND t_u_id = ?";
 
-module.exports = taskModel
+      // run query
+      db.query(
+        sql,
+        [data[0], data[1], data[2], data[3], data[4], data[5], data[6]],
+        function (err, res) {
+          if (err) return reject(err);
+          return resolve({ status: 200, message: "Success" });
+        }
+      );
+    });
+  };
+
+  return fn;
+};
+
+module.exports = taskModel;

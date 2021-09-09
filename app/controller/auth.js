@@ -47,9 +47,9 @@ let obj = () => {
         req.objToken = detailToken;
       }
 
-      fn.login(req, res, next);
+      next();
     } catch (e) {
-      res.send(Object.assign({ status: 401 }, e));
+      res.send(Object.assign({ status: 400 }, e));
     }
   };
 
@@ -88,14 +88,11 @@ let obj = () => {
         throw { message: "User not found, please re-login." };
       }
 
-      // set activity
-      await req.model("account").updateLogout(detailCustomer.u_id, now);
-
       // set customer & token into request object
       req.objUser = detailCustomer;
       req.objToken = detailToken;
 
-      fn.logout(req, res, next);
+      next();
     } catch (e) {
       res.send(Object.assign({ status: 400 }, e));
     }
@@ -143,6 +140,8 @@ let obj = () => {
       if (detailUser == null) {
         // frontend must detect this error code and redirect to register page
         throw { message: "Your email is not registered." };
+      } else if (detailUser.u_status == "inactive") {
+        throw { message: "User not found." };
       }
 
       // validate password
@@ -168,13 +167,15 @@ let obj = () => {
         throw { message: "Sorry, we have problem when trying to log you in." };
       }
     } catch (e) {
-      res.send(Object.assign({ status: 401 }, e));
+      res.send(Object.assign({ status: 400 }, e));
     }
   };
 
   fn.logout = async (req, res, next) => {
     try {
-      // validate phone + code
+      // set activity
+      await req.model("account").updateLogout(req.objUser.u_id, now);
+
       await req
         .model("auth")
         .setCurrentTokenInactive(req.objToken.atoken_device);
@@ -231,7 +232,7 @@ let obj = () => {
       }
       fn.register(req, res, next);
     } catch (e) {
-      res.send(Object.assign({ status: 401 }, e));
+      res.send(Object.assign({ status: 400 }, e));
     }
   };
 
@@ -270,6 +271,8 @@ let obj = () => {
         throw { message: "User not found, please re-login." };
       }
 
+      // set activity
+      await req.model("account").updateLogout(detailCustomer.u_id, now);
 
       // set customer & token into request object
       req.objUser = detailCustomer;
@@ -293,10 +296,12 @@ let obj = () => {
         throw { message: "Email Address is required." };
 
       // Validate Email Format
-      if (!validator.isEmail(email)) throw { message: "Invalid Email Address." };
+      if (!validator.isEmail(email))
+        throw { message: "Invalid Email Address." };
 
       // Required Password
-      if (validator.isEmpty(password)) throw { message: "Password is required." };
+      if (validator.isEmpty(password))
+        throw { message: "Password is required." };
 
       // Validate Role
       // 0 : User
@@ -305,13 +310,89 @@ let obj = () => {
 
       let data = [email, md5(password), name, role, now, "active"];
 
-      let result = await req.model('account').insertUser(data);
+      let result = await req.model("account").insertUser(data);
 
       res.send(result);
     } catch (e) {
-      res.send(Object.assign({ status: 400 ,error: e} ));
+      res.send(Object.assign({ status: 400 }, e));
     }
-  }
+  };
+
+  fn.resetPassword = async (req, res, next) => {
+    try {
+      let email = (req.body.email || "").trim();
+
+      // get customer detail
+      let detailUser = await req.model("account").getUserEmail(email);
+      // if customer not found, throw error
+      if (detailUser == null) {
+        // frontend must detect this error code and redirect to register page
+        throw { message: "Your email is not registered." };
+      }
+
+      let newPass = await req.model("account").generatePassword();
+
+      let data = {
+        detailUser: detailUser.u_id,
+        newPass: md5(newPass),
+      };
+
+      let is_updated = await req.model("account").resetPassword(data);
+
+      if (is_updated) {
+        res.send({ status: 200, message: "Success", newPassword: newPass });
+      } else {
+        throw {
+          message: "Sorry, we have problem when trying to reset your password.",
+        };
+      }
+    } catch (e) {
+      res.send(Object.assign({ status: 400 }, e));
+    }
+  };
+
+  fn.updatePassword = async (req, res, next) => {
+    try {
+      let userId = req.objUser.u_id;
+      let oldPass = (req.body.oldPass || "").trim();
+      let newPass = (req.body.newPass || "").trim();
+
+      // get customer detail
+      let detailUser = await req.model("account").getUser(userId);
+      // if customer not found, throw error
+      if (detailUser == null) {
+        // frontend must detect this error code and redirect to register page
+        throw { message: "User is not registered." };
+      }
+
+      // validate password
+      let password = await fn.validPassword(
+        (oldPass || "").trim(),
+        detailUser.u_password
+      );
+
+      if (password == false) {
+        throw { message: "Wrong Password" };
+      }
+
+      let data = {
+        id: detailUser.u_id,
+        newPass: md5(newPass),
+      };
+      let is_updated = await req.model("account").updatePassword(data);
+
+      if (is_updated) {
+        res.send({ status: 200, message: "Success" });
+      } else {
+        throw {
+          message:
+            "Sorry, we have problem when trying to update your password.",
+        };
+      }
+    } catch (e) {
+      res.send(Object.assign({ status: 400 }, e));
+    }
+  };
 
   return fn;
 };

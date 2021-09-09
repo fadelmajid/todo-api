@@ -1,5 +1,6 @@
 {
-    "account": "tdl_user_accounts",
-    "main_project": "tdl_main_project",
-    "task": "tdl_tasks"
+  "account": "tdl_user_accounts",
+  "main_project": "tdl_main_project",
+  "task": "tdl_tasks",
+  "auth_token": "auth_token"
 }
